@@ -36,7 +36,8 @@ INSTALLED_APPS = [
 	'django.contrib.messages',
 	'rest_framework',
 	'debug_toolbar',
-	'rest_framework_swagger',
+	'django.contrib.staticfiles',
+	'drf_yasg',
 	'issue'
 ]
 

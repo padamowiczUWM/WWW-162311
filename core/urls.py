@@ -14,13 +14,29 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
-from rest_framework_swagger.views import get_swagger_view
+from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
-schema_view = get_swagger_view(title='Issue API')
+from core import settings
+
+schema_view = get_schema_view(
+	openapi.Info(
+		title="Issue API",
+		default_version=f'0.0.1',
+		contact=openapi.Contact(email="patrykadam.dev@gmail.com"),
+		license=openapi.License(name="Beta"),
+	),
+	url=f'http://127.0.0.1:8000/',
+	public=True,
+	permission_classes=[permissions.AllowAny],
+	patterns=None
+)
 
 urlpatterns = [
-    re_path(r'^$', schema_view),
+    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path("__debug__/", include("debug_toolbar.urls")),
 ]
