@@ -31,12 +31,13 @@ schema_view = get_schema_view(
 	url=f'http://127.0.0.1:8000/',
 	public=True,
 	permission_classes=[permissions.AllowAny],
-	patterns=None
 )
 
 urlpatterns = [
-    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('admin/', admin.site.urls),
-    path("__debug__/", include("debug_toolbar.urls")),
+    path(r'swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path(r'swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path(r'admin/', admin.site.urls),
+	path(r'api/', include('issue.urls')),
+	# path(r'api/', include('user.urls')),
+	path(r"__debug__/", include("debug_toolbar.urls")),
 ]

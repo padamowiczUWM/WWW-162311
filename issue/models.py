@@ -3,7 +3,7 @@ from django.db import models
 from core.models import DictionaryBase
 
 class Issue(DictionaryBase):
-	class Status(object):
+	class Status:
 		NEW = 0
 		IN_PROGRESS = 1
 		DONE = 2
@@ -14,21 +14,51 @@ class Issue(DictionaryBase):
 			(DONE, "Zakończone")
 		)
 
+	class Priority:
+		LOW = 0
+		MEDIUM = 1
+		HIGH = 2
+
+		choices = (
+			(LOW, "Niski"),
+			(MEDIUM, "Średni"),
+			(HIGH, "Wysoki")
+		)
+
+
 	description = models.TextField(null=True, blank=True)
 	category = models.ForeignKey(
 		"issue.Category",
 		on_delete=models.DO_NOTHING
 	)
+	priority = models.IntegerField(choices=Priority.choices)
 	status = models.IntegerField(choices=Status.choices)
+	department = models.ForeignKey(
+		"issue.Department",
+		on_delete=models.DO_NOTHING
+	)
 
 	class Meta:
 		db_table = 'issue'
+
+class IssueLog(DictionaryBase):
+	issue = models.ForeignKey(
+		"issue.Issue",
+		on_delete=models.DO_NOTHING
+	)
+	class Meta:
+		db_table = 'issue_log'
 
 class Category(DictionaryBase):
 	class Meta:
 		db_table = 'category'
 
+class Department(DictionaryBase):
+	class Meta:
+		db_table = 'department'
 
+
+# region LAB
 class Position(models.Model):
 	name = models.CharField(max_length=128, blank=False)
 	description = models.TextField(
@@ -56,3 +86,5 @@ class Person(models.Model):
 
 	class Meta:
 		ordering = ['surname']
+
+# endregion
