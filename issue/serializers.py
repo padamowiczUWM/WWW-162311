@@ -1,4 +1,8 @@
+import datetime
+
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from issue.models import *
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -34,9 +38,19 @@ class PositionSerializer(serializers.Serializer):
 		instance.save()
 		return instance
 
+class TeamSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Team
+		fields = '__all__'
+		read_only_fields = ['id']
+
 
 class PersonSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Person
 		fields = '__all__'
 		read_only_fields = ['id']
+
+	def validate_month_created(self, value):
+		if datetime.datetime.now().strftime('%m') < value:
+			raise ValidationError('Miesiąc nie może być z przyszłości')

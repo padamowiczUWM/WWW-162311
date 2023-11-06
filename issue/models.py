@@ -1,6 +1,9 @@
+import datetime
+
 from django.db import models
 
 from core.models import DictionaryBase
+
 
 class Issue(DictionaryBase):
 	class Status:
@@ -25,7 +28,6 @@ class Issue(DictionaryBase):
 			(HIGH, "Wysoki")
 		)
 
-
 	description = models.TextField(null=True, blank=True)
 	category = models.ForeignKey(
 		"issue.Category",
@@ -41,17 +43,21 @@ class Issue(DictionaryBase):
 	class Meta:
 		db_table = 'issue'
 
+
 class IssueLog(DictionaryBase):
 	issue = models.ForeignKey(
 		"issue.Issue",
 		on_delete=models.DO_NOTHING
 	)
+
 	class Meta:
 		db_table = 'issue_log'
+
 
 class Category(DictionaryBase):
 	class Meta:
 		db_table = 'category'
+
 
 class Department(DictionaryBase):
 	class Meta:
@@ -66,6 +72,7 @@ class Position(models.Model):
 		null=True
 	)
 
+
 class Person(models.Model):
 	class SexType(models.IntegerChoices):
 		MAN = 1
@@ -79,6 +86,7 @@ class Person(models.Model):
 		'Position',
 		on_delete=models.DO_NOTHING
 	)
+	month_created = models.PositiveSmallIntegerField(default=datetime.datetime.now().strftime("%m"))
 	date_created = models.DateField(auto_now_add=True)
 
 	def __str__(self):
@@ -86,5 +94,13 @@ class Person(models.Model):
 
 	class Meta:
 		ordering = ['surname']
+
+
+class Team(models.Model):
+	name = models.CharField(max_length=60)
+	country = models.CharField(max_length=2)
+
+	def __str__(self):
+		return f"{self.name}"
 
 # endregion
