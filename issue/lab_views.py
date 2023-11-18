@@ -2,7 +2,9 @@ from django.shortcuts import render
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Person, Team
 from .serializers import PersonSerializer, TeamSerializer
@@ -17,19 +19,18 @@ def person_list(request):
     if request.method == 'GET':
         name = request.GET.get('name', '')
 
-        persons = Person.objects.filter(name__icontains=name)
+        persons = Person.objects.filter(name__icontains=name, owner=request.user)
         serializer = PersonSerializer(persons, many=True)
         return Response(serializer.data)
 
     if request.method == 'POST':
         serializer = PersonSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(owner=request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET'])
 def person_detail(request, pk):
 
     """
@@ -50,14 +51,48 @@ def person_detail(request, pk):
         serializer = PersonSerializer(person)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
+
+@api_view(['PUT'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def person_update(request, pk):
+
+    """
+    :param request: obiekt DRF Request
+    :param pk: id obiektu Person
+    :return: Response (with status and/or object/s data)
+    """
+    try:
+        person = Person.objects.get(pk=pk)
+    except Person.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
         serializer = PersonSerializer(person, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(owner=request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
+        person.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+def person_delete(request, pk):
+
+    """
+    :param request: obiekt DRF Request
+    :param pk: id obiektu Person
+    :return: Response (with status and/or object/s data)
+    """
+    try:
+        person = Person.objects.get(pk=pk)
+    except Person.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
         person.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -111,3 +146,25 @@ def team_detail(request, pk):
     elif request.method == 'DELETE':
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+def team_members(request, pk):
+
+    """
+    :param request: obiekt DRF Request
+    :param pk: id obiektu Team
+    :return: Response (with status and/or object/s data)
+    """
+    try:
+        team = Team.objects.get(pk=pk)
+    except Team.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    """
+    Zwraca pojedynczy obiekt typu Team.
+    """
+    if request.method == 'GET':
+        persons = Person.objects.filter(team=team)
+        serializer = PersonSerializer(persons, many=True)
+        return Response(serializer.data)

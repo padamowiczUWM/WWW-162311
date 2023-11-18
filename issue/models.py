@@ -89,6 +89,17 @@ class Person(models.Model):
 	month_created = models.PositiveSmallIntegerField(default=datetime.datetime.now().strftime("%m"))
 	date_created = models.DateField(auto_now_add=True)
 
+	team = models.ForeignKey(
+		"issue.Team",
+		on_delete=models.DO_NOTHING
+	)
+
+	owner = models.ForeignKey(
+		"user.User",
+		on_delete=models.DO_NOTHING
+	)
+
+
 	def __str__(self):
 		return f'{self.name} {self.surname}'
 

@@ -38,6 +38,6 @@ urlpatterns = [
     path(r'swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path(r'admin/', admin.site.urls),
 	path(r'api/', include('issue.urls')),
-	# path(r'api/', include('user.urls')),
+	path(r'api/', include('user.urls')),
 	path(r"__debug__/", include("debug_toolbar.urls")),
 ]
