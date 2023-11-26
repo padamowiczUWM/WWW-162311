@@ -105,6 +105,9 @@ class Person(models.Model):
 
 	class Meta:
 		ordering = ['surname']
+		permissions = [
+			("can_view_other_persons", "Pozwala wyświetlać obiekty Person, których użytkownik nie jest właścicielem"),
+		]
 
 
 class Team(models.Model):

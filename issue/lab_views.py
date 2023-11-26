@@ -1,17 +1,18 @@
-from django.shortcuts import render
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from django.contrib.auth.decorators import permission_required
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Person, Team
+from .permissions import CustomDjangoModelPermissions
 from .serializers import PersonSerializer, TeamSerializer
 
 
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def person_list(request):
     """
     Lista wszystkich obiektów modelu Person.
@@ -31,6 +32,9 @@ def person_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@permission_required('issue.view_person')
 def person_detail(request, pk):
 
     """
@@ -47,6 +51,9 @@ def person_detail(request, pk):
     Zwraca pojedynczy obiekt typu Person.
     """
     if request.method == 'GET':
+        if not request.user.has_perm('can_view_other_persons') and person.owner != request.user:
+            raise PermissionDenied()
+
         person = Person.objects.get(pk=pk)
         serializer = PersonSerializer(person)
         return Response(serializer.data)
@@ -79,6 +86,7 @@ def person_update(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def person_delete(request, pk):
 
@@ -97,6 +105,7 @@ def person_delete(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def team_list(request):
     """
     Lista wszystkich obiektów modelu Team.
@@ -116,6 +125,7 @@ def team_list(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def team_detail(request, pk):
 
     """
@@ -148,6 +158,7 @@ def team_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def team_members(request, pk):
 
