@@ -27,7 +27,17 @@ class Issue(DictionaryBase):
 			(MEDIUM, "Średni"),
 			(HIGH, "Wysoki")
 		)
-
+	creator = models.ForeignKey(
+		"user.User",
+		on_delete=models.DO_NOTHING
+	)
+	performer = models.ForeignKey(
+		"user.User",
+		null=True,
+		blank=True,
+		related_name='performer',
+		on_delete=models.DO_NOTHING
+	)
 	description = models.TextField(null=True, blank=True)
 	category = models.ForeignKey(
 		"issue.Category",
@@ -45,6 +55,11 @@ class Issue(DictionaryBase):
 
 
 class IssueLog(DictionaryBase):
+	user = models.ForeignKey(
+		"user.User",
+		on_delete=models.DO_NOTHING
+	)
+
 	issue = models.ForeignKey(
 		"issue.Issue",
 		on_delete=models.DO_NOTHING
@@ -52,9 +67,15 @@ class IssueLog(DictionaryBase):
 
 	class Meta:
 		db_table = 'issue_log'
+		ordering = ['-id']
 
 
 class Category(DictionaryBase):
+	department = models.ForeignKey(
+		'issue.Department',
+		on_delete=models.DO_NOTHING
+	)
+
 	class Meta:
 		db_table = 'category'
 
@@ -62,59 +83,3 @@ class Category(DictionaryBase):
 class Department(DictionaryBase):
 	class Meta:
 		db_table = 'department'
-
-
-# region LAB
-class Position(models.Model):
-	name = models.CharField(max_length=128, blank=False)
-	description = models.TextField(
-		blank=True,
-		null=True
-	)
-
-
-class Person(models.Model):
-	class SexType(models.IntegerChoices):
-		MAN = 1
-		WOMAN = 2
-		OTHER = 3
-
-	name = models.CharField(max_length=64, blank=False)
-	surname = models.CharField(max_length=64, blank=False)
-	sex = models.IntegerField(choices=SexType.choices)
-	position = models.ForeignKey(
-		'Position',
-		on_delete=models.DO_NOTHING
-	)
-	month_created = models.PositiveSmallIntegerField(default=datetime.datetime.now().strftime("%m"))
-	date_created = models.DateField(auto_now_add=True)
-
-	team = models.ForeignKey(
-		"issue.Team",
-		on_delete=models.DO_NOTHING
-	)
-
-	owner = models.ForeignKey(
-		"user.User",
-		on_delete=models.DO_NOTHING
-	)
-
-
-	def __str__(self):
-		return f'{self.name} {self.surname}'
-
-	class Meta:
-		ordering = ['surname']
-		permissions = [
-			("can_view_other_persons", "Pozwala wyświetlać obiekty Person, których użytkownik nie jest właścicielem"),
-		]
-
-
-class Team(models.Model):
-	name = models.CharField(max_length=60)
-	country = models.CharField(max_length=2)
-
-	def __str__(self):
-		return f"{self.name}"
-
-# endregion

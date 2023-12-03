@@ -1,20 +1,23 @@
-from django.urls import path
+from django.urls import re_path, include
 from rest_framework import routers
+from issue.views import IssueViewSet, CategoryViewSet, DepartmentViewSet, IssueLogViewSet
 
-from issue import lab_views
-from issue.views import IssueViewSet
+drf_router = routers.DefaultRouter()
+drf_router.register('issue', IssueViewSet, basename='issue')
+drf_router.register('category', CategoryViewSet, basename='category')
+drf_router.register('department', DepartmentViewSet, basename='department')
 
-issue_router = routers.DefaultRouter()
-issue_router.register('issue', IssueViewSet, basename='issue')
+drf_router2 = routers.DefaultRouter()
+drf_router2.register('log', IssueLogViewSet, basename='issue_log')
 
 urlpatterns = [
-    path('persons/', lab_views.person_list),
-    path('persons/<int:pk>/', lab_views.person_detail),
-    path('persons/update/<int:pk>/', lab_views.person_update),
-    path('persons/delete/<int:pk>/', lab_views.person_delete),
-    path('teams/', lab_views.team_list),
-    path('teams/<int:pk>/', lab_views.team_detail),
-    path('teams/<int:pk>/members/', lab_views.team_members),
+	re_path(r'^issue/(?P<issue_pk>[0-9]+)/', include(drf_router2.urls)),
+	re_path(r'^issue/count', IssueViewSet.as_view({
+		'get': 'get_issue_count'
+	})),
+	re_path(r'^issue/(?P<pk>[0-9]+)/assign-to-me', IssueViewSet.as_view({
+		'post': 'assign_to_me'
+	})),
 ]
 
-urlpatterns += issue_router.urls
+urlpatterns = drf_router.urls + urlpatterns

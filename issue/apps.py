@@ -10,20 +10,6 @@ class IssueConfig(AppConfig):
 
 		all_tables = connection.introspection.table_names()
 
-		if 'category' in all_tables:
-			Category.objects.get_or_create(
-				id=1,
-				defaults=dict(
-					name="Awaria sprzętu"
-				)
-			)
-			Category.objects.get_or_create(
-				id=2,
-				defaults=dict(
-					name="Błąd oprogramowania"
-				)
-			)
-
 		if 'department' in all_tables:
 			Department.objects.get_or_create(
 				id=1,
@@ -36,5 +22,21 @@ class IssueConfig(AppConfig):
 				defaults=dict(
 
 					name="HR"
+				)
+			)
+
+		if 'category' in all_tables:
+			Category.objects.get_or_create(
+				id=1,
+				defaults=dict(
+					department_id=1,
+					name="Awaria sprzętu"
+				)
+			)
+			Category.objects.get_or_create(
+				id=2,
+				defaults=dict(
+					department_id=2,
+					name="Raport"
 				)
 			)
